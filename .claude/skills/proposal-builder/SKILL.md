@@ -50,6 +50,22 @@ If the user says "total budget of ETB X" and the activity-justified cost would b
 
 ---
 
+## PART 1B — PROJECT DEFAULTS
+
+Apply these defaults automatically when the user has not specified otherwise. Label each applied default clearly so the submitter can confirm or override before final submission.
+
+| Default | Value | Condition |
+|---|---|---|
+| Implementing body (DRDIP-II proposals) | Somali Regional State Bureau of Agriculture, DRDIP-II Regional Project Coordination Unit | When implementing organisation is not stated and the project is identified as DRDIP-II |
+| Per diem rate when destination class is not clearly stated | ETB 1,271/day (woreda town — conservative default) | When the user has not explicitly confirmed the destination classification; label the rate as pending venue confirmation |
+| Participant support | Refreshments only | When participant travel or overnight stay has not been explicitly confirmed; do not infer residency from training length alone |
+| Rent categories | Excluded | Exclude hall rent, projector rent, venue rent, and all rent categories unless the user explicitly names the item and requests it in writing |
+| Tax on refreshments and stationery | 15% VAT + 3% income tax | Always; no exceptions unless user overrides |
+| Tax on fuel and lubricants | None | Do not tax fuel or lubricants unless the user provides a separate explicit rule |
+| Fuel and lubricant unit rates | Market estimate — always label as requiring confirmation | When the user does not provide official or contract rates |
+
+---
+
 ## PART 2 — PROPOSAL STRUCTURE
 
 Produce the proposal in the following order. Use clear section headings. Each section must be fully written in formal English (or Amharic if the user requests it).
@@ -100,6 +116,8 @@ Summary paragraph reinforcing the value of the project. Formal request for appro
 These rates come from the official Ethiopian Government Per Diem Directive (New Perdiem circular). **Do not invent, estimate, or modify any rate.** If a required rate is not listed below, **stop and flag it to the user** with this exact message:
 
 > ⚠️ RATE MISSING: The per diem rate for [location/category] is not available in the approved directive. Please confirm the correct rate before this line can be included in the budget.
+
+> **Maintenance note — Last updated: 2026-04-15.** If a new government per diem circular is issued, update all hardcoded rates in this table before further use of this skill.
 
 ### Destination-Based Daily Per Diem Rates
 
@@ -285,31 +303,32 @@ If any checklist item fails, fix the issue before presenting output.
 - Never assume a rate, location classification, or cost figure that has not been confirmed by the user or the directive table above.
 - If the user provides a location you cannot classify (not clearly Addis Ababa, regional, zonal, woreda, or kebele level), ask for clarification before proceeding.
 
+### Output Cleanliness Rules
+
+The final proposal output must be clean and submission-ready. Apply these rules without exception:
+
+- **Do not** include internal validation narration, checklist commentary, or step-by-step reasoning in the final proposal output. Run Part 9 validation silently and correct any issues before presenting the result.
+- **Do not** include a "What was corrected" section in the proposal output unless the user explicitly requests it.
+- Keep assumption notes **short** — one line per item, placed in a compact table at the top of the proposal or inline at the first occurrence. Do not repeat the same assumption note in multiple sections.
+- Only flag items that genuinely require the submitter's action before the proposal can be finalised (e.g., unconfirmed venue, unknown approving authority name, market-rate estimates).
+- Do not label items that are not genuinely uncertain (e.g., training duration, standard staff roles, project name confirmed by the user).
+
 ### Placeholder Reduction Rules
 
-Prefer clearly labeled assumptions over blank `[TO BE PROVIDED]` placeholders wherever the missing information can be reasonably inferred from context. Mark every assumption explicitly so the user knows to confirm it before final submission.
+Prefer clearly labeled assumptions over blank `[TO BE PROVIDED]` placeholders wherever the missing information can be reasonably inferred from context. Restrict assumption labels to items that still require confirmation.
 
-**Standard labeled assumptions to apply when information is not provided:**
+**Items that may be assumed with a label:**
 
-| Missing information | Use this assumption (label it) |
+| Missing information | Default assumption |
 |---|---|
-| Approving authority name/title | "Regional Director General, [Implementing Bureau/Organisation] (Assumed — confirm before submission)" |
-| Contact person | "[Project name] Project Coordinator, [Implementing Organisation], [City] (Assumed — confirm before submission)" |
-| Funding body | Infer from project name if possible (e.g., World Bank / DRDIP-II); label as assumed |
-| Estimated community reach | Estimate from activity scope: "Approximately [N] community members based on planned field visit schedule (Assumed)" |
+| Approving authority name/title | *(name and title — confirm before submission)* |
+| Contact person name | *(name — confirm before submission)* |
+| Funding body | Infer from project name if possible (e.g., DRDIP-II / World Bank) |
 | Submission month/year | Use current date context |
 
-**Information that must NOT be assumed and must remain as explicit flags:**
+**Items that must NOT be assumed — flag explicitly:**
 
-- Per diem rates — use directive only; never assume
-- Fuel and lubricant unit prices — use reasonable market estimates but label them explicitly as estimates requiring confirmation
-- Beneficiary counts that directly drive budget line item quantities
-- Any rate or figure not covered by the official directive
-
-**Labeling format for assumptions:**
-
-Use this format inline: `[Assumed: description — confirm before submission]`
-
-Example: `Regional Director General, Somali Regional State Bureau of Agriculture [Assumed — confirm before submission]`
-
-This keeps the document readable and near-final while flagging items that still need owner verification.
+- Per diem rates — use directive only; never invent
+- Fuel and lubricant unit prices — use market estimate, label for confirmation
+- Participant count when it directly drives budget quantities
+- Venue classification when not stated by the user — apply woreda town default per Part 1B and label for confirmation
