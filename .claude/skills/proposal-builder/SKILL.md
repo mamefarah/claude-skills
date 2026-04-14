@@ -28,6 +28,26 @@ If the user has not already supplied the following, ask for them before proceedi
 
 Do **not** proceed to drafting until you have enough information to populate every section of the proposal and every line of the budget.
 
+**Additional clarifying question to ask if not already stated:**
+
+> "Is participant per diem required for meeting attendees, or should only refreshments be provided? If participants are traveling from a different location or staying overnight to attend, per diem may apply. If no travel or overnight stay is involved, the default is refreshments only."
+
+---
+
+## PART 1A — BUDGET INTENT RULE
+
+Before calculating the budget, determine how the user has stated the budget figure and apply the correct interpretation.
+
+| Phrase used by user | Interpretation | How to apply |
+|---|---|---|
+| "budget ceiling of ETB X" | Maximum permissible spend | Build a justified, realistic budget. Grand total must be ≤ ETB X. Do **not** inflate costs to approach the ceiling. |
+| "total budget of ETB X" | Target amount | Build the budget to land close to ETB X. Use reasonable estimates for all eligible line items that bring the total near the stated target. If policy constraints prevent reaching it, flag clearly. |
+| No budget figure given | No ceiling or target | Build the budget based purely on activity needs and approved rates. |
+
+If the user says "budget ceiling" and the activity-justified cost is well below the ceiling, that is correct and expected. State clearly in the proposal that the total falls within the ceiling.
+
+If the user says "total budget of ETB X" and the activity-justified cost would be well below that figure, ask the user whether additional eligible activities or participants should be included to make full use of the target — do not fabricate costs.
+
 ---
 
 ## PART 2 — PROPOSAL STRUCTURE
@@ -127,14 +147,31 @@ Use **only** the following budget categories when they are relevant to the proje
 | # | Budget Line | Notes |
 |---|---|---|
 | 1 | Staff per diem | Apply destination-based rate from Part 3 |
-| 2 | Community participant per diem | Apply destination-based rate from Part 3 |
-| 3 | Participant per diem | Apply destination-based rate from Part 3 |
+| 2 | Community participant per diem | See participant per diem rules below — not automatic |
+| 3 | Participant per diem | See participant per diem rules below — not automatic |
 | 4 | Facilitator / trainer per diem | Apply destination-based rate from Part 3 |
 | 5 | Driver per diem | Apply destination-based rate from Part 3 |
 | 6 | Refreshments | Subject to 15% VAT + 3% income tax |
 | 7 | Stationery | Subject to 15% VAT + 3% income tax |
 | 8 | Fuel | No tax unless user provides a separate rule |
 | 9 | Lubricants | No tax unless user provides a separate rule |
+
+### Participant Per Diem Rules
+
+**Default for meeting participants: refreshments only.**
+
+Do **not** automatically assign per diem to community participants, woreda-level staff, or any meeting attendees unless one of the following conditions is explicitly confirmed:
+
+1. Participants are **traveling from a different location** (different woreda, kebele, or town) to attend the activity, OR
+2. Participants require an **overnight stay** to attend the activity.
+
+If neither condition is stated, include refreshments for meeting participants and do not add participant per diem.
+
+If the user has not addressed participant per diem at all, apply the default (refreshments only) and note it transparently in the budget:
+
+> ℹ️ PARTICIPANT PER DIEM NOTE: Per diem has not been included for meeting participants because no participant travel or overnight stay was specified. If participants are traveling from another location, please confirm so per diem can be added.
+
+If the user explicitly states that participant per diem is required (with travel or overnight justification), apply the destination-based rate for the meeting location from Part 3.
 
 ---
 
@@ -240,11 +277,39 @@ If any checklist item fails, fix the issue before presenting output.
 
 ---
 
-## PART 11 — OUTPUT BEHAVIOUR
+## PART 11 — OUTPUT BEHAVIOUR AND PLACEHOLDER REDUCTION
 
 - Produce the full proposal in one response unless the user asks for section-by-section review.
 - Use formal, professional language throughout.
 - Use tables wherever data is structured (budget, time schedule, outputs).
-- If any required information is still missing after asking, insert a clearly marked placeholder: `[TO BE PROVIDED: description]`.
 - Never assume a rate, location classification, or cost figure that has not been confirmed by the user or the directive table above.
 - If the user provides a location you cannot classify (not clearly Addis Ababa, regional, zonal, woreda, or kebele level), ask for clarification before proceeding.
+
+### Placeholder Reduction Rules
+
+Prefer clearly labeled assumptions over blank `[TO BE PROVIDED]` placeholders wherever the missing information can be reasonably inferred from context. Mark every assumption explicitly so the user knows to confirm it before final submission.
+
+**Standard labeled assumptions to apply when information is not provided:**
+
+| Missing information | Use this assumption (label it) |
+|---|---|
+| Approving authority name/title | "Regional Director General, [Implementing Bureau/Organisation] (Assumed — confirm before submission)" |
+| Contact person | "[Project name] Project Coordinator, [Implementing Organisation], [City] (Assumed — confirm before submission)" |
+| Funding body | Infer from project name if possible (e.g., World Bank / DRDIP-II); label as assumed |
+| Estimated community reach | Estimate from activity scope: "Approximately [N] community members based on planned field visit schedule (Assumed)" |
+| Submission month/year | Use current date context |
+
+**Information that must NOT be assumed and must remain as explicit flags:**
+
+- Per diem rates — use directive only; never assume
+- Fuel and lubricant unit prices — use reasonable market estimates but label them explicitly as estimates requiring confirmation
+- Beneficiary counts that directly drive budget line item quantities
+- Any rate or figure not covered by the official directive
+
+**Labeling format for assumptions:**
+
+Use this format inline: `[Assumed: description — confirm before submission]`
+
+Example: `Regional Director General, Somali Regional State Bureau of Agriculture [Assumed — confirm before submission]`
+
+This keeps the document readable and near-final while flagging items that still need owner verification.
