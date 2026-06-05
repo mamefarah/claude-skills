@@ -389,6 +389,7 @@ Rules:
 - Include action items carried forward from previous reports if the user provides them.
 - Status values: Pending / In Progress / Completed / Overdue.
 - Target dates must be specific (DD/MM/YYYY). If not provided by the user: `[MISSING: target date]`
+- Do not state that recommendations include target dates unless target dates are provided. If target dates are missing, write: "Target dates must be added before submission."
 - Do not mark an item as Completed unless the user explicitly confirms it.
 - Days Overdue: calculate only when both the target date and the report date are available. If either is missing, write: `[MISSING: date required to calculate overdue days]`. Do not estimate.
 
@@ -644,3 +645,4 @@ If validation fails and cannot be self-corrected, insert the ISSUES REQUIRING CL
 - Do not add unsolicited suggestions for additional sections.
 - Format for direct copy-paste into a word processor: clear numbered headings, complete tables, hyphen bullets, horizontal rule before each annex.
 - After any revision: fill [MISSING] and [CLARIFY] flags when new data is provided. Re-run Part 9 silently. Correct any issues introduced by the revision.
+- End the output at the final report section, missing information list, or annexes. Do not add post-report commentary such as "The report above is a functional draft" unless the user asks for a validation note.
