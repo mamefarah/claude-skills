@@ -427,7 +427,7 @@ Apply these variations in addition to the standard structure in Part 6. Where a 
 ### 7.1 — Field Mission Report
 
 - Section 6: use the site-visit table format.
-- Section 7: include infrastructure status for each site — construction stage (not started / ongoing / completed), percentage physical completion, and quality observations. Include only components covered.
+- Section 7: include infrastructure status for each site. Record the construction stage (not started / ongoing / completed), percentage physical completion, and quality observations. Include only components covered.
 - Add Section 7.5 after the component sub-sections: **Community Feedback Summary.** Report what community members said. Attribute feedback to specific communities. Do not paraphrase in ways that change the meaning.
 - Section 8: include at least one finding for each site visited.
 
@@ -489,7 +489,7 @@ Apply these variations in addition to the standard structure in Part 6. Where a 
 
 ### 7.7 — Steering Committee Meeting Report
 
-- Replace Section 3 with: **MEETING DETAILS.** Include: meeting number, date, venue, convening authority, quorum status (quorum achieved: yes/no; members present vs. required for quorum).
+- Replace Section 3 with: **MEETING DETAILS.** Include: meeting number, date, venue, convening authority, quorum status (quorum achieved: yes/no, members present vs. required for quorum).
 - Replace Section 5 with: **AGENDA.** List each agenda item by number.
 - Replace Section 7 with: **PROCEEDINGS BY AGENDA ITEM.** For each agenda item: state the topic, summarise the discussion, and record the decision or outcome.
 - Replace Section 8 with: **DECISIONS MADE.** Numbered list: each decision, the agenda item it relates to, and the approving authority.
