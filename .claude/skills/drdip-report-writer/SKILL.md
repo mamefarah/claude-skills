@@ -10,6 +10,27 @@ Then produce a complete, copy-ready report that follows every rule below without
 
 ---
 
+## SUPPORTED CAPABILITIES
+
+This skill can:
+
+- Generate a full monthly DRDIP-II regional progress report
+- Generate a full quarterly DRDIP-II regional progress report
+- Generate a full annual DRDIP-II regional progress report
+- Generate a blank monthly report template (pre-structured, ready to fill in)
+- Generate a blank quarterly report template (pre-structured, ready to fill in)
+- Generate a blank annual report template (pre-structured, ready to fill in)
+- Convert raw component data, field notes, or activity summaries into a full report
+- Prepare an executive summary for any report type
+- Generate an action matrix from recommendations or meeting decisions
+- Create a missing information list identifying all [MISSING] fields in a draft
+- Generate a DQA checklist for report submission quality review
+- Attach an NC-CAT tracker as an optional annex when compliance follow-up is needed
+
+This skill does not generate travel allowance audit logs, per diem climate-tier tables, transport receipt audit logs, cooperative tranche liquidation calculators, or Excel workbook structures unless explicitly requested as optional annexes.
+
+---
+
 ## PART 1 — INFORMATION TO COLLECT BEFORE WRITING
 
 ### Blocking rule
