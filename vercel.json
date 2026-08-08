@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "name": "drdip-ii-kobo-proxy",
+  "functions": {
+    "api/kobo-proxy.js": { "maxDuration": 30 }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, X-Kobo-Token, X-Kobo-Server, X-Asset-Uid" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "drdip-ii-kobo-proxy",
+  "version": "1.0.0",
+  "description": "Vercel serverless proxy for DRDIP-II KoboToolbox dashboard",
+  "engines": { "node": ">=18.x" },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {}
+}
