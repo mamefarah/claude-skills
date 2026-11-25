@@ -1,0 +1,8 @@
+# Core dependency for every script in scripts/ and mcp_server/.
+# [browser] pulls in Playwright, needed for the interactive `notebooklm login`
+# step (run on a machine with a real browser — see docs/SETUP.md).
+notebooklm-py[browser]
+
+# Only needed to run mcp_server/server.py. Pinned to match the version
+# notebooklm-py itself depends on for its own `[mcp]` extra.
+fastmcp==3.4.2

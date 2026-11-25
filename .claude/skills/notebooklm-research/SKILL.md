@@ -1,7 +1,8 @@
 ---
 name: notebooklm-research
 description: >
-  Full-autopilot AI research agent powered by Google NotebookLM (notebooklm-py v0.3.4).
+  Full-autopilot AI research agent powered by Google NotebookLM (notebooklm-py; see
+  references/api_surface.md for the exact installed version and API).
   Ingests sources (URL, text, PDF, DOCX, YouTube, Google Drive), runs deep web research,
   asks cited questions, and generates 10 native artifact types (audio podcast, video,
   cinematic video, slide deck, report, quiz, flashcards, mind map, infographic, data table,
@@ -28,10 +29,11 @@ NotebookLM uses RPC/HTTP calls after a one-time browser cookie auth. No browser
 automation per operation -- the session is stored and reused.
 
 ```
-~/.notebooklm/storage_state.json
+~/.notebooklm/profiles/<profile>/storage_state.json   # resolved automatically, per-profile
 ```
 
-Login once via the built-in CLI:
+Login once via the built-in CLI (requires a real, interactive browser — see docs/SETUP.md
+for remote/headless environments, where this step has to run elsewhere first):
 
 ```bash
 notebooklm login              # One-time browser auth, saves session
@@ -52,9 +54,9 @@ citation-backed content.
 
 | Component | Role |
 |---|---|
-| **notebooklm-py** (v0.3.4) | Python client for NotebookLM (8 sub-APIs, 50+ methods, built-in CLI) |
-| **notebooklm CLI** | Built-in CLI: `notebooklm login`, `notebook`, `source`, `chat`, `generate`, `download`, `research`, `share` |
-| **MCP Server** (mcp_server/) | FastMCP server exposing 13 tools for Claude Code / Cursor / Gemini CLI |
+| **notebooklm-py** | Python client for NotebookLM (8 sub-APIs, 50+ methods, built-in CLI) — see references/api_surface.md for the installed version |
+| **notebooklm CLI** | Built-in CLI: `notebooklm login`, `notebook`, `source`, `chat`, `research`, `share`, `artifact`, `note`. Has **no** `generate`/`download` commands — that only exists in the Python API, wrapped by `scripts/notebooklm_client.py` below |
+| **MCP Server** (mcp_server/) | This skill's own FastMCP server (`notebooklm-research`, distinct from notebooklm-py's own `notebooklm-mcp`), exposing 13 higher-level tools for Claude Code / Cursor / Gemini CLI |
 | **Wrapper CLI** (scripts/) | Our higher-level wrappers: `notebooklm_client.py`, `pipeline.py` |
 | **LLM** (Claude) | Content creator (writes original text using NotebookLM research) |
 | **trend-pulse** (optional) | Trending topic discovery for research-to-content pipelines |
@@ -90,7 +92,7 @@ citation-backed content.
 └──────────────┴──────────────┴─────────────────┴─────────────────────────────────┘
 ```
 
-### 8 Sub-APIs (notebooklm-py v0.3.4)
+### 8 Sub-APIs (notebooklm-py)
 
 | Sub-API | Accessor | Description |
 |---|---|---|
@@ -114,22 +116,18 @@ URLs, text, PDF, DOCX, Markdown, CSV, YouTube, and Google Drive documents.
 
 ```bash
 # Create a notebook
-notebooklm notebook create "AI Agents Research"
+notebooklm create "AI Agents Research"
 
-# Add sources
-notebooklm source add NOTEBOOK_ID --url "https://arxiv.org/abs/2401.12345"
-notebooklm source add NOTEBOOK_ID --url "https://youtube.com/watch?v=VIDEO_ID"
-notebooklm source add NOTEBOOK_ID --text "Custom Notes" --content "Full text here..."
-notebooklm source add NOTEBOOK_ID --file /path/to/document.pdf
+# Add sources (type auto-detected; -n/--notebook targets a specific notebook)
+notebooklm source add "https://arxiv.org/abs/2401.12345" -n NOTEBOOK_ID
+notebooklm source add "https://youtube.com/watch?v=VIDEO_ID" -n NOTEBOOK_ID
+notebooklm source add "Full text here..." --type text --title "Custom Notes" -n NOTEBOOK_ID
+notebooklm source add /path/to/document.pdf -n NOTEBOOK_ID
 ```
 
-**Our wrapper CLI (global command or scripts/notebooklm_client.py):**
+**Our wrapper CLI (scripts/notebooklm_client.py):**
 
 ```bash
-# After pip install ., use global commands:
-# notebooklm-skill create --title "AI Agents Research" --sources url1 url2
-
-# Or use scripts directly:
 python3 scripts/notebooklm_client.py create \
   --title "AI Agents Research" \
   --sources \
@@ -172,8 +170,9 @@ This is one of the most powerful features -- it finds sources you did not know e
 **Built-in CLI:**
 
 ```bash
-notebooklm research start NOTEBOOK_ID "latest advances in AI agents"
-notebooklm research poll NOTEBOOK_ID
+notebooklm source add-research "latest advances in AI agents" --mode fast -n NOTEBOOK_ID
+notebooklm research status -n NOTEBOOK_ID
+notebooklm research wait --import-all -n NOTEBOOK_ID
 ```
 
 **Our wrapper CLI:**
@@ -271,8 +270,8 @@ Every answer includes source citations with exact passage references.
 **Built-in CLI:**
 
 ```bash
-notebooklm chat NOTEBOOK_ID "What are the key differences between ReAct and Reflexion?"
-notebooklm chat NOTEBOOK_ID "Can you elaborate on point 3?" --conversation CONV_ID
+notebooklm ask "What are the key differences between ReAct and Reflexion?" -n NOTEBOOK_ID
+notebooklm ask "Can you elaborate on point 3?" -c CONVERSATION_ID -n NOTEBOOK_ID
 ```
 
 **Our wrapper CLI:**
@@ -324,81 +323,68 @@ generated server-side by Google -- no LLM cost on our end.
 > **Warning:** `infographic` generation works but download is unreliable (fragile API
 > structure parsing). Use `slides` instead for downloadable visual content.
 
-**Built-in CLI:**
-
-```bash
-notebooklm generate audio NOTEBOOK_ID
-notebooklm generate video NOTEBOOK_ID
-notebooklm generate report NOTEBOOK_ID --format briefing_doc
-notebooklm generate quiz NOTEBOOK_ID
-notebooklm generate flashcards NOTEBOOK_ID
-# notebooklm generate infographic NOTEBOOK_ID  # ⚠️ download unreliable
-notebooklm generate slide-deck NOTEBOOK_ID
-notebooklm generate data-table NOTEBOOK_ID
-notebooklm generate mind-map NOTEBOOK_ID
-```
-
-**Our wrapper CLI:**
+**The installed `notebooklm` CLI has no `generate`/`download` commands** — its
+`artifact` command group only covers list/get/rename/delete/export/poll/wait/retry/suggestions.
+Generation and download only exist in the Python API. `scripts/notebooklm_client.py`
+below wraps that API into a CLI (see references/api_surface.md for how this was verified):
 
 ```bash
 # 1. Audio Overview (podcast-style discussion)
-python3 scripts/notebooklm_client.py generate audio \
-  --notebook NOTEBOOK_ID \
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type audio \
   --language en \
   --format deep_dive \
   --length default \
-  --instructions "Focus on practical implications"
+  --instructions "Focus on practical implications" \
+  --wait
 
 # 2. Video Overview
-python3 scripts/notebooklm_client.py generate video \
-  --notebook NOTEBOOK_ID \
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type video \
   --format explainer \
-  --style whiteboard
+  --style whiteboard --wait
 
 # 3. Cinematic Video (Veo 3, requires AI Ultra subscription)
-python3 scripts/notebooklm_client.py generate cinematic-video \
-  --notebook NOTEBOOK_ID \
-  --instructions "Dramatic visual storytelling"
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type cinematic-video \
+  --instructions "Dramatic visual storytelling" --wait
 
 # 4. Slide Deck
-python3 scripts/notebooklm_client.py generate slide-deck \
-  --notebook NOTEBOOK_ID \
-  --format detailed_deck
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type slide-deck \
+  --format detailed_deck --wait
 
 # 5. Report (Briefing Doc / Study Guide / Blog Post / Custom)
-python3 scripts/notebooklm_client.py generate report \
-  --notebook NOTEBOOK_ID \
-  --format briefing_doc
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type report \
+  --format briefing_doc --wait
 
-# 6. Study Guide (convenience shortcut for report format=study_guide)
-python3 scripts/notebooklm_client.py generate report \
-  --notebook NOTEBOOK_ID \
-  --format study_guide
+# 6. Study Guide (dedicated artifact type, not just a report format)
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type study-guide --wait
 
 # 7. Quiz
-python3 scripts/notebooklm_client.py generate quiz \
-  --notebook NOTEBOOK_ID \
-  --quantity standard \
-  --difficulty medium
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type quiz \
+  --quantity standard --difficulty medium --wait
 
 # 8. Flashcards
-python3 scripts/notebooklm_client.py generate flashcards \
-  --notebook NOTEBOOK_ID
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type flashcards --wait
 
 # 9. Mind Map
-python3 scripts/notebooklm_client.py generate mind-map \
-  --notebook NOTEBOOK_ID
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type mind-map --wait
 
-# 10. Infographic — ⚠️ download unreliable, use slides instead
-# python3 scripts/notebooklm_client.py generate infographic \
-#   --notebook NOTEBOOK_ID \
-#   --orientation landscape \
-#   --detail standard
+# 10. Infographic — ⚠️ download unreliable, use slide-deck instead
+# python3 scripts/notebooklm_client.py generate \
+#   --notebook NOTEBOOK_ID --type infographic \
+#   --orientation landscape --detail standard --wait
 
 # 11. Data Table
-python3 scripts/notebooklm_client.py generate data-table \
-  --notebook NOTEBOOK_ID \
-  --instructions "Compare frameworks by features, performance, and community size"
+python3 scripts/notebooklm_client.py generate \
+  --notebook NOTEBOOK_ID --type data-table \
+  --instructions "Compare frameworks by features, performance, and community size" --wait
 ```
 
 ### Artifact Generation Options
@@ -416,7 +402,7 @@ python3 scripts/notebooklm_client.py generate data-table \
 
 **Video formats:** `explainer`, `brief`, `cinematic` (AI Ultra only)
 
-**Video styles:** `auto_select`, `classic`, `whiteboard`, `conversational`, `dynamic`
+**Video styles:** `auto_select`, `classic`, `whiteboard`, `heritage`, `paper_craft`, `watercolor`, `anime`, `retro_print`, `kawaii`
 
 **Report formats:** `briefing_doc`, `study_guide`, `blog_post`, `custom` (with `--prompt`)
 
@@ -428,64 +414,44 @@ python3 scripts/notebooklm_client.py generate data-table \
 
 ### Download Artifacts
 
-**Built-in CLI:**
-
-```bash
-notebooklm download audio NOTEBOOK_ID output.m4a
-notebooklm download video NOTEBOOK_ID output.mp4
-```
-
-**Our wrapper CLI:**
+Same caveat as generation: the installed `notebooklm` CLI has no `download`
+command either. Use `scripts/notebooklm_client.py`:
 
 ```bash
 # Download audio (M4A)
-python3 scripts/notebooklm_client.py download audio \
-  --notebook NOTEBOOK_ID \
-  --output podcast.m4a
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type audio --output podcast.m4a
 
 # Download video (MP4)
-python3 scripts/notebooklm_client.py download video \
-  --notebook NOTEBOOK_ID \
-  --output video.mp4
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type video --output video.mp4
 
 # Download slide deck (PDF)
-python3 scripts/notebooklm_client.py download slide-deck \
-  --notebook NOTEBOOK_ID \
-  --output slides.pdf
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type slide-deck --output slides.pdf
 
 # Get report content (Markdown)
-python3 scripts/notebooklm_client.py download report \
-  --notebook NOTEBOOK_ID \
-  --output report.md
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type report --output report.md
 
 # Export quiz as JSON
-python3 scripts/notebooklm_client.py download quiz \
-  --notebook NOTEBOOK_ID \
-  --format json \
-  --output quiz.json
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type quiz --format json --output quiz.json
 
 # Export flashcards
-python3 scripts/notebooklm_client.py download flashcards \
-  --notebook NOTEBOOK_ID \
-  --output flashcards.json
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type flashcards --output flashcards.json
 
 # Export mind map as JSON
-python3 scripts/notebooklm_client.py download mind-map \
-  --notebook NOTEBOOK_ID \
-  --output mindmap.json
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type mind-map --output mindmap.json
 
 # Export data table as CSV
-python3 scripts/notebooklm_client.py download data-table \
-  --notebook NOTEBOOK_ID \
-  --output comparison.csv
+python3 scripts/notebooklm_client.py download --notebook NOTEBOOK_ID --type data-table --output comparison.csv
 ```
+
+All `download` calls auto-select the most recently generated artifact of
+`--type`; pass `--artifact ARTIFACT_ID` to target a specific one instead.
 
 ### Notebook Management
 
 ```bash
 # List all notebooks
 python3 scripts/notebooklm_client.py list
-notebooklm notebook list
+notebooklm list
 
 # Get notebook summary and suggested topics
 python3 scripts/notebooklm_client.py describe --notebook NOTEBOOK_ID
@@ -507,8 +473,8 @@ python3 scripts/notebooklm_client.py delete --notebook NOTEBOOK_ID
 
 # Share notebook (public link)
 python3 scripts/notebooklm_client.py share --notebook NOTEBOOK_ID --public
-notebooklm share NOTEBOOK_ID --public
-notebooklm share NOTEBOOK_ID --add user@example.com
+notebooklm share public --enable -n NOTEBOOK_ID
+notebooklm share add user@example.com --permission viewer -n NOTEBOOK_ID
 ```
 
 ## Phase 3: CREATE -- Content Generation
@@ -705,42 +671,39 @@ MCP-compatible client.
 
 ### Configuration
 
-After `pip install .`:
-
-```json
-{
-  "mcpServers": {
-    "notebooklm": {
-      "command": "notebooklm-mcp"
-    }
-  }
-}
+```bash
+pip install notebooklm-py fastmcp==3.4.2   # or: pip install "notebooklm-py[mcp]"
 ```
 
-Or using script path:
-
 ```json
 {
   "mcpServers": {
-    "notebooklm": {
+    "notebooklm-research": {
       "command": "python3",
-      "args": ["/path/to/notebooklm-skill/mcp_server/server.py"]
+      "args": ["/path/to/notebooklm-research/mcp_server/server.py"]
     }
   }
 }
 ```
+
+Named `notebooklm-research`, deliberately not `notebooklm-mcp` — `notebooklm-py`
+already installs its own general-purpose `notebooklm-mcp` console script
+(`pip install "notebooklm-py[mcp]"`); this server is this skill's own,
+narrower one, adding the pipeline-style tools (`nlm_research_pipeline`,
+`nlm_trend_research`) documented below. Run either or both, just don't
+register them under the same name.
 
 HTTP mode (for remote / multi-client access):
 
 ```bash
-notebooklm-mcp --http --port 8765
+python3 mcp_server/server.py --http --port 8766
 ```
 
 ```json
 {
   "mcpServers": {
-    "notebooklm": {
-      "url": "http://localhost:8765/mcp"
+    "notebooklm-research": {
+      "url": "http://localhost:8766/mcp"
     }
   }
 }
@@ -764,8 +727,8 @@ notebooklm-mcp --http --port 8765
 
 | Tool | Parameters | Description |
 |---|---|---|
-| `nlm_generate(notebook, type, lang?, instructions?)` | notebook, artifact type | Generate any of 9 artifact types (infographic excluded) |
-| `nlm_download(notebook, type, output_path)` | notebook, artifact type, output | Download artifact to file |
+| `nlm_generate(notebook, artifact_type, lang?, instructions?)` | notebook, artifact type | Generate any of 9 artifact types (infographic excluded — raises an error pointing at slide_deck instead) |
+| `nlm_download(notebook, artifact_type, output_path)` | notebook, artifact type, output | Download the most recent artifact of that type |
 | `nlm_list_artifacts(notebook, type?)` | notebook ID, optional type filter | List artifacts in notebook |
 
 **Research operations (1):**
@@ -778,84 +741,103 @@ notebooklm-mcp --http --port 8765
 
 | Tool | Parameters | Description |
 |---|---|---|
-| `nlm_research_pipeline(sources[], questions[], output_format?)` | URLs, questions, format | Full research-to-content pipeline |
-| `nlm_trend_research(geo?, count?, platform?)` | region, count, platform | Trending topics to researched content |
+| `nlm_research_pipeline(sources[], questions[], title?, output_format?)` | URLs, questions, title, "brief"\|"report" | Creates a notebook, asks the questions, returns a cited research brief (not finished prose — see Architecture Overview) |
+| `nlm_trend_research(topic, source_urls[], platform?)` | topic, article URLs, platform | Researches a topic already identified as trending. Trend *discovery* is a separate MCP server (trend-pulse) this tool cannot call — run its `get_trending()` yourself first and pass the URLs in |
 
 ## Built-in CLI Reference (notebooklm-py)
 
-The `notebooklm` CLI is installed with `pip install notebooklm` and mirrors the
-Python API directly.
+The `notebooklm` CLI ships with `pip install notebooklm-py`. Commands below are
+verified against the actually-installed CLI (`notebooklm --help` / `notebooklm
+<command> --help`) — **not** copied from upstream prose, which drifts. It has
+no `notebook`/`chat` command groups and no `generate`/`download` at all;
+notebook and chat operations are top-level commands, and artifact generation
+only exists in the Python API (`scripts/notebooklm_client.py`, below).
+Every command accepts `-n/--notebook` (uses the current context notebook — set
+with `notebooklm use NOTEBOOK_ID` — if omitted) and supports partial-ID
+matching.
 
 ### Authentication
 
 ```bash
 notebooklm login                              # One-time browser auth
 notebooklm login --check                      # Verify stored session
+notebooklm doctor                             # Diagnose profile/auth/directory issues
 ```
 
-### Notebooks
+### Notebooks (top-level commands, not a `notebook` group)
 
 ```bash
-notebooklm notebook list                      # List all notebooks
-notebooklm notebook create "Title"            # Create notebook
-notebooklm notebook get NOTEBOOK_ID           # Get notebook details
-notebooklm notebook delete NOTEBOOK_ID        # Delete notebook
-notebooklm notebook rename NOTEBOOK_ID "New"  # Rename notebook
+notebooklm list                               # List all notebooks
+notebooklm create "Title"                     # Create notebook
+notebooklm use NOTEBOOK_ID                    # Set the current-context notebook
+notebooklm delete -n NOTEBOOK_ID              # Delete notebook
+notebooklm rename -n NOTEBOOK_ID "New Title"  # Rename notebook
+notebooklm summary -n NOTEBOOK_ID             # AI summary + insights
+notebooklm metadata -n NOTEBOOK_ID            # Export metadata + source list
 ```
 
-### Sources
+### Sources (`source` group)
 
 ```bash
-notebooklm source list NOTEBOOK_ID                         # List sources
-notebooklm source add NOTEBOOK_ID --url "https://..."      # Add URL
-notebooklm source add NOTEBOOK_ID --text "T" --content "." # Add text
-notebooklm source add NOTEBOOK_ID --file /path/to/doc.pdf  # Add file
-notebooklm source delete NOTEBOOK_ID SOURCE_ID             # Delete source
-notebooklm source guide NOTEBOOK_ID SOURCE_ID              # AI summary + keywords
-notebooklm source fulltext NOTEBOOK_ID SOURCE_ID           # Full indexed text
+notebooklm source add "https://..." -n NOTEBOOK_ID           # Type auto-detected: url/file/youtube/text
+notebooklm source add /path/to/doc.pdf -n NOTEBOOK_ID
+notebooklm source add "some text" --type text --title "Note" -n NOTEBOOK_ID
+notebooklm source add-research "deep dive query" --mode deep -n NOTEBOOK_ID  # Search web/drive, add results
+notebooklm source list -n NOTEBOOK_ID
+notebooklm source delete SOURCE_ID -n NOTEBOOK_ID
+notebooklm source guide SOURCE_ID -n NOTEBOOK_ID              # AI summary + keywords
+notebooklm source fulltext SOURCE_ID -n NOTEBOOK_ID           # Full indexed text
 ```
 
-### Chat
+### Chat (top-level `ask`, not a `chat` group)
 
 ```bash
-notebooklm chat NOTEBOOK_ID "Question?"                    # Ask question
-notebooklm chat NOTEBOOK_ID "Follow up" --conversation ID  # Follow-up
+notebooklm ask "What are the main themes?" -n NOTEBOOK_ID
+notebooklm ask "continue this" -c CONVERSATION_ID             # Follow-up
+notebooklm ask "explain X" --json                              # Structured output + citations
+notebooklm ask "explain X" --save-as-note                      # Save the answer as a note
 ```
 
-### Artifact Generation
+### Notes (`note` group)
 
 ```bash
-notebooklm generate audio NOTEBOOK_ID                      # Podcast
-notebooklm generate video NOTEBOOK_ID                      # Video
-notebooklm generate report NOTEBOOK_ID --format briefing_doc
-notebooklm generate quiz NOTEBOOK_ID
-notebooklm generate flashcards NOTEBOOK_ID
-# notebooklm generate infographic NOTEBOOK_ID  # ⚠️ download unreliable
-notebooklm generate slide-deck NOTEBOOK_ID
-notebooklm generate data-table NOTEBOOK_ID
-notebooklm generate mind-map NOTEBOOK_ID
+notebooklm note create -n NOTEBOOK_ID --title "Scope" --content "..."
+notebooklm note list -n NOTEBOOK_ID
+notebooklm note get NOTE_ID -n NOTEBOOK_ID
+notebooklm note save NOTE_ID -n NOTEBOOK_ID --content "..."
+notebooklm note delete NOTE_ID -n NOTEBOOK_ID
 ```
 
-### Download
+### Artifacts (`artifact` group — list/manage only; **no generate/download**)
 
 ```bash
-notebooklm download audio NOTEBOOK_ID output.m4a           # Download podcast
-notebooklm download video NOTEBOOK_ID output.mp4           # Download video
-notebooklm download slide-deck NOTEBOOK_ID output.pdf      # Download slides
+notebooklm artifact list -n NOTEBOOK_ID
+notebooklm artifact get ARTIFACT_ID -n NOTEBOOK_ID
+notebooklm artifact wait ARTIFACT_ID -n NOTEBOOK_ID            # Block until generation finishes
+notebooklm artifact retry ARTIFACT_ID -n NOTEBOOK_ID           # Retry a failed one in place
 ```
+Use `scripts/notebooklm_client.py generate`/`download` (below) to actually
+create and download artifacts.
 
-### Research
+### Research (`research` group — monitoring only; start it via `source add-research`)
 
 ```bash
-notebooklm research start NOTEBOOK_ID "query"              # Start research
-notebooklm research poll NOTEBOOK_ID                       # Poll results
+notebooklm source add-research "query" --mode deep --no-wait -n NOTEBOOK_ID
+notebooklm research status -n NOTEBOOK_ID                      # Non-blocking check
+notebooklm research wait --import-all -n NOTEBOOK_ID           # Block, then import everything found
+notebooklm research import -n NOTEBOOK_ID                      # Import a completed run's sources
 ```
+`scripts/notebooklm_client.py research`/`research-poll` (below) wrap the
+equivalent Python API (`client.research.start/poll/import_sources`) if you
+want to script this instead.
 
-### Sharing
+### Sharing (`share` group)
 
 ```bash
-notebooklm share NOTEBOOK_ID --public                      # Enable public link
-notebooklm share NOTEBOOK_ID --add user@example.com        # Share with user
+notebooklm share status -n NOTEBOOK_ID
+notebooklm share public --enable -n NOTEBOOK_ID
+notebooklm share add user@example.com --permission viewer -n NOTEBOOK_ID
+notebooklm share remove user@example.com -n NOTEBOOK_ID
 ```
 
 ## Our Wrapper CLI Reference (scripts/)
@@ -944,12 +926,12 @@ Common fixes:
 
 | Component | Path | Purpose |
 |---|---|---|
-| `scripts/notebooklm_client.py` | scripts/ | Core CLI (also: `notebooklm-skill` after pip install) |
-| `scripts/pipeline.py` | scripts/ | Higher-level pipelines (also: `notebooklm-pipeline` after pip install) |
-| `mcp_server/server.py` | mcp_server/ | FastMCP server (also: `notebooklm-mcp` after pip install) |
-| `mcp_server/tools.py` | mcp_server/ | MCP tool implementations |
-| `scripts/auth_helper.py` | scripts/ | Authentication helper |
-| `references/api_surface.md` | references/ | Full notebooklm-py v0.3.4 API documentation (8 sub-APIs, all methods) |
+| `scripts/notebooklm_client.py` | scripts/ | Core CLI — run as `python3 scripts/notebooklm_client.py <command>` |
+| `scripts/pipeline.py` | scripts/ | Higher-level pipelines — `python3 scripts/pipeline.py <command>` |
+| `mcp_server/server.py` | mcp_server/ | This skill's FastMCP server (`notebooklm-research`) |
+| `mcp_server/tools.py` | mcp_server/ | MCP tool implementations (importable/testable independent of the MCP transport) |
+| `scripts/auth_helper.py` | scripts/ | Authentication helper (session check, shared by every script) |
+| `references/api_surface.md` | references/ | notebooklm-py API surface, introspected from the installed version (8 sub-APIs, all methods) |
 | `references/output_formats.md` | references/ | JSON output format specifications for all API responses |
 | `references/pipeline_recipes.md` | references/ | 7 common pipeline recipes with full command sequences |
 | `docs/SETUP.md` | docs/ | Installation and setup guide |
